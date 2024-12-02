@@ -13,21 +13,16 @@ first_name = "andrews"
 last_name = ""
 url = f"https://www.findagrave.com/memorial/search?firstname={first_name}&middlename=&{last_name}=&birthyear=&birthyearfilter=&deathyear=&deathyearfilter=&location=&locationId=&bio=&linkedToName=&plot=&memorialid=&mcid=&datefilter=&orderby=r&page=1#sr-170512167"
 
-# Initialize Selenium WebDriver
 driver = webdriver.Chrome()  # Ensure you have the correct version of ChromeDriver
 driver.get(url)
 
-# Wait for the initial content to load
 time.sleep(3)
 
-# Initialize storage for names and dates
 all_data = []
 
-# Track the number of results in the last iteration
 previous_result_count = 0
 
 while True:
-    # Extract current page content using BeautifulSoup
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
     # Extract names
@@ -41,27 +36,26 @@ while True:
         for tag in date_tags
     ]
 
-    # Combine names and dates
     page_data = list(zip(names, dates))
 
-    # Add unique entries to the master list
+    # Add unique entries
     for entry in page_data:
         if entry not in all_data:
             all_data.append(entry)
 
-    # Check if the number of results has changed
+    # Check
     if len(all_data) == previous_result_count:
         print("No more content loaded. Stopping.")
         break
 
     previous_result_count = len(all_data)
 
-    # Incremental scrolling to load content gradually
-    for _ in range(10):  # Scroll small steps to ensure loader triggers
+    # Incremental scroll
+    for _ in range(10):
         driver.execute_script("window.scrollBy(0, 400);")
-        time.sleep(1)  # Allow partial loading of new content
+        time.sleep(1) 
 
-    time.sleep(2)  # Extra delay to handle dynamic loading
+    time.sleep(2)  
 
 # Print the results
 print(f"Total entries extracted: {len(all_data)}")
@@ -87,26 +81,21 @@ from selenium.webdriver.common.by import By
 # Fix encoding
 sys.stdout.reconfigure(encoding='utf-8')
 
-# Setup URL
 first_name = "andrews"
 last_name = ""
 url = f"https://www.findagrave.com/memorial/search?firstname={first_name}&middlename=&lastname={last_name}&birthyear=&birthyearfilter=&deathyear=&deathyearfilter=&location=&locationId=&bio=&linkedToName=&plot=&memorialid=&mcid=&datefilter=&orderby=r&page=1#sr-170512167"
 
-# Initialize Selenium WebDriver
-driver = webdriver.Chrome()  # Ensure you have the correct version of ChromeDriver
+driver = webdriver.Chrome()  
 driver.get(url)
 
-# Wait for the initial content to load
 time.sleep(10)
 
-# Initialize storage for names and dates
+
 all_data = []
 
-# Track the number of results in the last iteration
 previous_result_count = 0
 
 while True:
-    # Extract current page content using BeautifulSoup
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
     # Extract names
@@ -117,9 +106,9 @@ while True:
         raw_name = tag.get_text(separator=" ", strip=True)
         
         # Clean up the name
-        clean_name = re.sub(r'[“”]', '', raw_name)  # Remove quotes
-        clean_name = re.sub(r'[^\w\s,.]', '', clean_name)  # Remove unexpected symbols
-        clean_name = re.sub(r'\s{2,}', ' ', clean_name).strip()  # Normalize spaces
+        clean_name = re.sub(r'[“”]', '', raw_name)  
+        clean_name = re.sub(r'[^\w\s,.]', '', clean_name)  
+        clean_name = re.sub(r'\s{2,}', ' ', clean_name).strip()  
         
         names.append(clean_name)
 
@@ -137,15 +126,15 @@ while True:
             birth_date, death_date = [d.strip() for d in date_text.split('–')]
             dates.append((birth_date, death_date))
 
-    # Combine names and dates
+    # Combine
     page_data = list(zip(names, dates))
 
-    # Add unique entries to the master list
+    #unique entries
     for entry in page_data:
         if entry not in all_data:
             all_data.append(entry)
 
-    # Check if the number of results has changed
+    # Check
     if len(all_data) == previous_result_count:
         print("No more content loaded. Stopping.")
         break 
@@ -153,11 +142,11 @@ while True:
     previous_result_count = len(all_data)
 
     # Incremental scrolling to load content gradually
-    for _ in range(10):  # Scroll small steps to ensure loader triggers
+    for _ in range(10): 
         driver.execute_script("window.scrollBy(0, 400);")
-        time.sleep(1)  # Allow partial loading of new content
+        time.sleep(1)  
 
-    time.sleep(2)  # Extra delay to handle dynamic loading
+    time.sleep(2) 
 
 # Print the results
 print(f"Total entries extracted: {len(all_data)}")
@@ -181,25 +170,19 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-# Fix encoding
 sys.stdout.reconfigure(encoding='utf-8')
 
-# Setup URL
 first_name = "andrews"
 last_name = ""
 url = f"https://www.findagrave.com/memorial/search?firstname={first_name}&middlename=&lastname={last_name}&birthyear=&birthyearfilter=&deathyear=&deathyearfilter=&location=&locationId=&bio=&linkedToName=&plot=&memorialid=&mcid=&datefilter=&orderby=r&page=1#sr-170512167"
 
-# Initialize Selenium WebDriver
-driver = webdriver.Chrome()  # Ensure you have the correct version of ChromeDriver
+driver = webdriver.Chrome()
 driver.get(url)
 
-# Wait for the initial content to load
 time.sleep(10)
 
-# Initialize storage for names and dates
 all_data = []
-
-# Track the number of results in the last iteration
+# For Tracking
 previous_result_count = 0
 
 while True:
@@ -210,7 +193,7 @@ while True:
     name_tags = soup.find_all('h2', class_='name-grave')
     date_tags = soup.find_all('b', class_='birthDeathDates')
 
-    # Initialize storage for the names and dates
+
     names = []
     dates = []
 
@@ -229,9 +212,9 @@ while True:
     for tag in date_tags:
         date_text = tag.get_text(strip=True)
 
-        # Handle "unknown" dates case
+
         if date_text == "Birth and death dates unknown.":
-            dates.append((None, None))  # No dates available
+            dates.append((None, None)) 
         else:
             # Split dates and remove excess spaces
             birth_date, death_date = [d.strip() for d in date_text.split('–')]
@@ -240,26 +223,25 @@ while True:
     # Combine names and dates
     page_data = list(zip(names, dates))
 
-    # Add unique entries to the master list
+    # Add unique entries
     for entry in page_data:
         if entry not in all_data:
             all_data.append(entry)
 
-    # Check if the number of results has changed
+    # Check 
     if len(all_data) == previous_result_count:
         print("No more content loaded. Stopping.")
         break
 
     previous_result_count = len(all_data)
 
-    # Incremental scrolling to load content gradually
-    for _ in range(10):  # Scroll small steps to ensure loader triggers
+    # Incremental scrolling 
+    for _ in range(10): 
         driver.execute_script("window.scrollBy(0, 400);")
-        time.sleep(1)  # Allow partial loading of new content
+        time.sleep(1)  
 
-    time.sleep(2)  # Extra delay to handle dynamic loading
+    time.sleep(2)  
 
-# Print the results
 print(f"Total entries extracted: {len(all_data)}")
 for name, (birth, death) in all_data:
     if birth and death:
@@ -267,6 +249,6 @@ for name, (birth, death) in all_data:
     else:
         print(f"Name: {name}, Birth Date: Unknown, Death Date: Unknown")
 
-# Close the driver
+
 driver.quit()
 

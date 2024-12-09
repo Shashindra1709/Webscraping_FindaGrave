@@ -95,7 +95,6 @@ def scrape_findagrave(first_name, last_name, dob=None):
 
 def main():
 
-    # Collect user input and ensure values are captured properly
     first_name = input("Enter the first name: ").strip()
     
     last_name = input("Enter the last name (leave blank if unknown): ").strip()
@@ -108,11 +107,9 @@ def main():
     print(f"\nTotal entries extracted: {len(data)}")
     for name, birth_date, death_date in data:
         print(f"Name: {name}, Birth Date: {birth_date or 'Unknown'}, Death Date: {death_date or 'Unknown'}")
-
+    print(f"\nTotal entries extracted: {len(data)}")
 
 if __name__ == "__main__":
     main()
 
-# # test_input.py
-# name = input("What is your name? ")
-# print(f"Hello, {name}!")
+

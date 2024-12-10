@@ -4,6 +4,9 @@ import re
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from fake_useragent import UserAgent
+import random
 import pandas as pd
 import requests
 import json
@@ -17,7 +20,17 @@ first_name = "priya"
 last_name = ""
 published_year = "2020"
 url = f"https://www.legacy.com/api/_frontend/search?endDate=2024-12-06&firstName={first_name}&keyword=&lastName={last_name}&limit=50&noticeType=all&session_id=&startDate={published_year}-01-01"
-driver = webdriver.Chrome() 
+
+chrome_options = Options()
+# chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+
+ua = UserAgent()
+user_agent = ua.random
+chrome_options.add_argument(f"user-agent={user_agent}")
+
+driver = webdriver.Chrome(options=chrome_options)
 driver.get(url)
 
 time.sleep(10)
@@ -79,7 +92,6 @@ for entry in filtered_data:
     print(f"Full Name: {entry['full_name']}, Dates : {entry['From_To_Years']}, Age: {entry['age']}, location : {entry['location']}")
 
 print(f"Total maching records :{len(filtered_data)}")
-
 
 
 

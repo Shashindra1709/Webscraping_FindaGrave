@@ -1,0 +1,121 @@
+import time
+import sys
+import re  
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from fake_useragent import UserAgent
+import json
+
+sys.stdout.reconfigure(encoding='utf-8')
+
+# Wrapper function that accepts input and performs the scraping
+def scrape_obituaries(first_name, last_name, published_year):
+    try:
+        # Construct the URL with the provided parameters
+        url = f"https://www.legacy.com/api/_frontend/search?endDate=2024-12-06&firstName={first_name}&keyword=&lastName={last_name}&limit=50&noticeType=all&session_id=&startDate={published_year}-01-01"
+
+        chrome_options = Options()
+        # chrome_options.add_argument('--headless')  # Uncomment for headless mode
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+
+        # Use a random user agent to avoid blocking
+        ua = UserAgent()
+        user_agent = ua.random
+        chrome_options.add_argument(f"user-agent={user_agent}")
+
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get(url)
+
+        time.sleep(10)
+
+        # Scraping loop
+        while True:
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+            # Attempt to parse JSON data from the page
+            try:
+                json_data = json.loads(soup.text)
+            except json.JSONDecodeError as e:
+                print(f"Error decoding JSON: {e}")
+                driver.quit()
+                return
+
+            # Save the data to a JSON file
+            try:
+                with open('obituaries_data.json', 'w') as file:
+                    json.dump(json_data, file)
+            except IOError as e:
+                print(f"Error saving data to file: {e}")
+                driver.quit()
+                return
+
+            driver.quit()
+            break
+
+        # Read the data from the saved file
+        try:
+            with open('obituaries_data.json', 'r') as file:
+                data = json.load(file)
+        except (IOError, json.JSONDecodeError) as e:
+            print(f"Error reading the saved JSON file: {e}")
+            return
+
+        # Process the obituary data
+        try:
+            orbituaries = data.get('obituaries', [])
+            filtered_data = []
+
+            def clean_name(name):
+                return re.sub(r'\"(.*?)\"', r'\1', name)
+
+            for obituary in orbituaries:
+                full_name = obituary['name']['fullName']
+                full_name = clean_name(full_name)
+                age = obituary.get('age')
+                From_To_Years = obituary.get('fromToYears')
+
+                # Extracting location
+                location = obituary.get('location', {})
+                city = location.get('city', {}).get('fullName', 'Unknown')
+                state = location.get('state', {}).get('fullName', 'Unknown')
+                full_location = f"{city}, {state}" if city and state else "Unknown"
+
+                filtered_data.append({
+                    'full_name': full_name,
+                    'age': age,
+                    'From_To_Years': From_To_Years,
+                    'location': full_location
+                })
+
+            # Print the filtered data
+            for entry in filtered_data:
+                print(f"Full Name: {entry['full_name']}, Dates: {entry['From_To_Years']}, Age: {entry['age']}, Location: {entry['location']}")
+
+            print(f"Total matching records: {len(filtered_data)}")
+
+        except KeyError as e:
+            print(f"Missing expected data in the JSON response: {e}")
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+# Main program that handles input
+def main():
+    try:
+        first_name = input("Enter the first name: ")
+        last_name = input("Enter the last name (leave empty for no last name): ")
+        published_year = input("Enter the published year: ")
+
+        # Call the scraping function
+        scrape_obituaries(first_name, last_name, published_year)
+
+    except KeyboardInterrupt:
+        print("\nOperation interrupted by user.")
+    except Exception as e:
+        print(f"An error occurred in the main program: {e}")
+
+# Run the main program
+if __name__ == "__main__":
+    main()

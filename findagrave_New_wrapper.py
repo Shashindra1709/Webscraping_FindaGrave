@@ -3,6 +3,9 @@ import re
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import pandas as pd
+from selenium.webdriver.chrome.options import Options
+from fake_useragent import UserAgent
+import random
 
 
 def scrape_data(first_name, last_name="", birth_year="", death_year="", death_year_filter="", location=""):
@@ -24,10 +27,23 @@ def scrape_data(first_name, last_name="", birth_year="", death_year="", death_ye
           f"&birthyear={birth_year}&birthyearfilter=&deathyear={death_year}&deathyearfilter={death_year_filter}&location={location}" \
           f"&locationId=&bio=&linkedToName=&plot=&memorialid=&mcid=&datefilter=&orderby=r&page=1"
 
-    # Set up the web driver
-    driver = webdriver.Chrome()
-    driver.get(url)
-    time.sleep(10)
+    # web driver setup
+    try:
+        chrome_options = Options()
+        # chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+
+        ua = UserAgent()
+        user_agent = ua.random
+        chrome_options.add_argument(f"user-agent={user_agent}")
+
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get(url)
+        time.sleep(random.uniform(2, 10))
+    except Exception as e:
+        print(f"Error initializing the web driver: {e}")
+        return []
 
     all_data = []
     previous_result_count = 0
@@ -98,9 +114,9 @@ def scrape_data(first_name, last_name="", birth_year="", death_year="", death_ye
             previous_result_count = len(all_data)
 
             # Scroll to load more content
-            for _ in range(10):
-                driver.execute_script("window.scrollBy(0, 800);")
-                time.sleep(3)
+            for _ in range(20):
+                driver.execute_script("window.scrollBy(0, 400);")
+                time.sleep(1.5)
 
             time.sleep(2)
 
@@ -110,27 +126,25 @@ def scrape_data(first_name, last_name="", birth_year="", death_year="", death_ye
     return all_data
 
 
-# Main program
-if __name__ == "__main__":
+def main():
+
     # Get input from the user
     first_name = input("Enter first name: ").strip()
     last_name = input("Enter last name (optional): ").strip()
     birth_year = input("Enter birth year (optional): ").strip()
     death_year = input("Enter death year (optional): ").strip()
-
-    # Input for death year filter
-    death_year_filter = input("Enter +/- range for death year filter (e.g., +1, -1, +2): ").strip()
-
+    death_year_filter = input("Enter +/- range for death year filter (e.g., 1, 2, 3 .. ): ").strip()
     location = input("Enter location (optional): ").strip()
 
     # Call the wrapper function
     data = scrape_data(first_name, last_name, birth_year, death_year, death_year_filter, location)
 
     # Display the results
-    print(f"Total entries extracted: {len(data)}")
+    
     for name, birth_date, death_date, loc in data:
         location_info = f"Location: {loc}" if loc else "Location: Unknown"
         print(f"Name: {name}, Birth Date: {birth_date or 'Unknown'}, Death Date: {death_date or 'Unknown'}, {location_info}")
+    print(f"Total entries extracted: {len(data)}")
 
     # Save the results
     # save_csv = input("Do you want to save the data to a CSV file? (y/n): ").strip().lower()
@@ -139,3 +153,6 @@ if __name__ == "__main__":
     #     output_file = "findagrave_data.csv"
     #     df.to_csv(output_file, index=False, encoding='utf-8')
     #     print(f"Data saved to {output_file}.")
+
+if __name__ == "__main__":
+    main()

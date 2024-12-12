@@ -6,14 +6,20 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
 import json
+from datetime import datetime
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-# Wrapper function that accepts input and performs the scraping
+
 def scrape_obituaries(first_name, last_name, published_year):
     try:
+        #input validate
+        if not published_year.isdigit() or len(published_year) !=4:
+            raise ValueError("Published year must be a valid 4-digit number")
+
         # Construct the URL with the provided parameters
-        url = f"https://www.legacy.com/api/_frontend/search?endDate=2024-12-06&firstName={first_name}&keyword=&lastName={last_name}&limit=50&noticeType=all&session_id=&startDate={published_year}-01-01"
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        url = f"https://www.legacy.com/api/_frontend/search?endDate={current_date}&firstName={first_name}&keyword=&lastName={last_name}&limit=400&noticeType=all&session_id=&startDate={published_year}-01-01"
 
         chrome_options = Options()
         # chrome_options.add_argument('--headless')  # Uncomment for headless mode
@@ -30,7 +36,7 @@ def scrape_obituaries(first_name, last_name, published_year):
 
         time.sleep(10)
 
-        # Scraping loop
+
         while True:
             soup = BeautifulSoup(driver.page_source, 'html.parser')
 
@@ -89,9 +95,9 @@ def scrape_obituaries(first_name, last_name, published_year):
                     'location': full_location
                 })
 
-            # Print the filtered data
+            
             for entry in filtered_data:
-                print(f"Full Name: {entry['full_name']}, Dates: {entry['From_To_Years']}, Age: {entry['age']}, Location: {entry['location']}")
+                print(f"Full_Name: {entry['full_name']}, Dates: {entry['From_To_Years']}, Age: {entry['age']}, Location: {entry['location']}")
 
             print(f"Total matching records: {len(filtered_data)}")
 
@@ -101,21 +107,18 @@ def scrape_obituaries(first_name, last_name, published_year):
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
-# Main program that handles input
+
 def main():
     try:
         first_name = input("Enter the first name: ")
         last_name = input("Enter the last name (leave empty for no last name): ")
         published_year = input("Enter the published year: ")
 
-        # Call the scraping function
         scrape_obituaries(first_name, last_name, published_year)
 
     except KeyboardInterrupt:
         print("\nOperation interrupted by user.")
-    except Exception as e:
-        print(f"An error occurred in the main program: {e}")
 
-# Run the main program
+
 if __name__ == "__main__":
     main()

@@ -25,7 +25,7 @@ def scrape_data(first_name, last_name="", birth_year="", death_year="", death_ye
     """
     url = f"https://www.findagrave.com/memorial/search?firstname={first_name}&middlename=&lastname={last_name}" \
           f"&birthyear={birth_year}&birthyearfilter=&deathyear={death_year}&deathyearfilter={death_year_filter}&location={location}" \
-          f"&locationId=&bio=&linkedToName=&plot=&memorialid=&mcid=&datefilter=&orderby=r&page=1"
+          f"&locationId=&bio=&linkedToName=&plot=&memorialid=&mcid=&datefilter=&orderby=r"
 
     # web driver setup
     try:
@@ -113,7 +113,7 @@ def scrape_data(first_name, last_name="", birth_year="", death_year="", death_ye
 
             previous_result_count = len(all_data)
 
-            # Scroll to load more content
+            # Scroll
             for _ in range(20):
                 driver.execute_script("window.scrollBy(0, 400);")
                 time.sleep(1.5)
@@ -127,32 +127,34 @@ def scrape_data(first_name, last_name="", birth_year="", death_year="", death_ye
 
 
 def main():
+    try:
 
-    # Get input from the user
-    first_name = input("Enter first name: ").strip()
-    last_name = input("Enter last name (optional): ").strip()
-    birth_year = input("Enter birth year (optional): ").strip()
-    death_year = input("Enter death year (optional): ").strip()
-    death_year_filter = input("Enter +/- range for death year filter (e.g., 1, 2, 3 .. ): ").strip()
-    location = input("Enter location (optional): ").strip()
+        # Get input
+        first_name = input("Enter first name: ").strip()
+        last_name = input("Enter last name (optional): ").strip()
+        birth_year = input("Enter birth year (optional): ").strip()
+        death_year = input("Enter death year (optional): ").strip()
+        death_year_filter = input("Enter +/- range for death year filter (e.g., 1, 2, 3 .. ): ").strip()
+        location = input("Enter location (optional): ").strip()
 
-    # Call the wrapper function
-    data = scrape_data(first_name, last_name, birth_year, death_year, death_year_filter, location)
 
-    # Display the results
-    
-    for name, birth_date, death_date, loc in data:
-        location_info = f"Location: {loc}" if loc else "Location: Unknown"
-        print(f"Name: {name}, Birth Date: {birth_date or 'Unknown'}, Death Date: {death_date or 'Unknown'}, {location_info}")
-    print(f"Total entries extracted: {len(data)}")
+        data = scrape_data(first_name, last_name, birth_year, death_year, death_year_filter, location)
 
-    # Save the results
-    # save_csv = input("Do you want to save the data to a CSV file? (y/n): ").strip().lower()
-    # if save_csv == "y":
-    #     df = pd.DataFrame(data, columns=["Name", "Birth Date", "Death Date", "Location"])
-    #     output_file = "findagrave_data.csv"
-    #     df.to_csv(output_file, index=False, encoding='utf-8')
-    #     print(f"Data saved to {output_file}.")
+        
+        
+        for name, birth_date, death_date, loc in data:
+            location_info = f"Location: {loc}" if loc else "Location: Unknown"
+            print(f"Full_Name: {name}, Birth Date: {birth_date or 'Unknown'}, Death Date: {death_date or 'Unknown'}, {location_info}")
+        
+        print(f"Total entries extracted: {len(data)}")
+
+        # Save the results
+        # df = pd.DataFrame(data, columns=["Name", "Birth Date", "Death Date", "Location"])
+        # output_file = "findagrave_data.csv"
+        # df.to_csv(output_file, index=False, encoding='utf-8')
+        # print(f"Data saved to {output_file}.")
+    except KeyboardInterrupt:
+        print("\nOperation interrupted by user.")
 
 if __name__ == "__main__":
     main()

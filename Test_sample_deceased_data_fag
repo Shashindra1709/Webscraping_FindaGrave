@@ -21,7 +21,9 @@ def scrape_data(first_name, last_name="", location=""):
     Returns:
         list: A list of tuples containing names, birth dates, death dates, and location.
     """
-    url = f"https://www.findagrave.com/memorial/search?firstname={first_name}&middlename=&lastname={last_name}&location={location}"
+    url = f"https://www.findagrave.com/memorial/search?firstname={first_name}&middlename=&lastname={last_name}" \
+          f"&birthyear=&birthyearfilter=&deathyear=2022&deathyearfilter=3&location={location}" \
+          f"&locationId=&bio=&linkedToName=&plot=&memorialid=&mcid=&datefilter=&orderby=r"
 
     # Web driver setup
     try:
@@ -46,6 +48,15 @@ def scrape_data(first_name, last_name="", location=""):
     try:
         while True:
             soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+            # Remove unwanted tags
+            for unwanted_tag in soup.find_all(['span', 'small', 'figure']):
+                if ('icon-findagrave' in unwanted_tag.get('class', []) or
+                        'icon-flowers' in unwanted_tag.get('class', []) or
+                        'text-muted' in unwanted_tag.get('class', []) or
+                        unwanted_tag.get('aria-label') in ['No grave photo', 'Flowers have been left.'] or
+                        'visually-hidden' in unwanted_tag.get('class', [])):
+                    unwanted_tag.decompose()
 
             # Extract name, date, and location information
             name_tags = soup.find_all('h2', class_='name-grave')
@@ -76,9 +87,9 @@ def scrape_data(first_name, last_name="", location=""):
                 location_tag = div.find('p', class_='addr-cemet', string=lambda x: x and 'Plot info:' not in x)
                 if location_tag:
                     location_text = " ".join(location_tag.get_text(separator=" ", strip=True).split())
-                    locations.append(location_text)
+                    locations.append(location_text if location_text else "Unknown")
                 else:
-                    locations.append(None)
+                    locations.append("Unknown")
 
             # Ensure lists have the same length
             while len(locations) < len(names):
@@ -113,7 +124,7 @@ def scrape_data(first_name, last_name="", location=""):
 def main():
     try:
         # Load the data file
-        file_path = "data.csv"  # Replace with your file's name
+        file_path = "C:\\Users\\bogas\\Downloads\\deceased_file.csv"  # Replace with your file's name
         df = pd.read_csv(file_path)
 
         # Extract required columns

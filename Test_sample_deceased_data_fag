@@ -147,6 +147,8 @@ def main():
 
             time.sleep(random.uniform(5, 15))  # Avoid overloading the server
 
+            print(f"Total entries extracted: {len(scraped_data)}")
+
         # Save all scraped data to a CSV file
         scraped_df = pd.DataFrame(all_scraped_data, columns=["Full Name", "Birth Date", "Death Date", "Location"])
         scraped_file = "scraped_results.csv"

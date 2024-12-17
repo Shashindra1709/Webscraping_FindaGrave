@@ -1,0 +1,400 @@
+# import pandas as pd
+# import time
+# import re
+# from bs4 import BeautifulSoup
+# from selenium import webdriver
+# from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
+# from selenium.common.exceptions import TimeoutException, ElementNotInteractableException, NoSuchElementException
+# from fake_useragent import UserAgent
+# import random
+
+
+# def scrape_data(first_name, last_name="", location=""):
+#     """
+#     Scrapes data from Find A Grave website based on the provided parameters.
+
+#     Args:
+#         first_name (str): First name of the individual.
+#         last_name (str): Last name of the individual (optional).
+#         location (str): City of the individual (optional).
+
+#     Returns:
+#         list: A list of tuples containing names, birth dates, death dates, and location.
+#     """
+#     url = "https://www.findagrave.com/memorial/search"
+
+#     # Web driver setup
+#     try:
+#         chrome_options = Options()
+#         chrome_options.add_argument('--no-sandbox')
+#         chrome_options.add_argument('--disable-dev-shm-usage')
+
+#         ua = UserAgent()
+#         user_agent = ua.random
+#         chrome_options.add_argument(f"user-agent={user_agent}")
+
+#         driver = webdriver.Chrome(options=chrome_options)
+#         driver.get(url)
+#         time.sleep(random.uniform(2, 5))  # Wait for the page to load
+#     except Exception as e:
+#         print(f"Error initializing the web driver: {e}")
+#         return []
+
+#     all_data = []
+
+#     try:
+#         # Input the search parameters into the form
+#         try:
+#             # Input first name
+#             first_name_input = WebDriverWait(driver, 10).until(
+#                 EC.element_to_be_clickable((By.NAME, "firstname"))
+#             )
+#             first_name_input.clear()
+#             first_name_input.send_keys(first_name)
+
+#             # Input last name
+#             if last_name:
+#                 last_name_input = driver.find_element(By.NAME, "lastname")
+#                 last_name_input.clear()
+#                 last_name_input.send_keys(last_name)
+
+#             # Input location into the typeahead input field
+#             if location:
+#                 location_input = WebDriverWait(driver, 10).until(
+#                     EC.element_to_be_clickable((By.ID, "location"))
+#                 )
+
+#                 location_input.click()
+#                 time.sleep(1)
+#                 location_input.clear()
+#                 location_input.send_keys(location)
+
+#                 # Wait for the dropdown list to appear and select the first suggestion
+#                 try:
+#                     suggestion_list = WebDriverWait(driver, 10).until(
+#                         EC.visibility_of_element_located((By.XPATH, "//div[@role='listbox']"))
+#                     )
+#                     first_suggestion = suggestion_list.find_element(By.TAG_NAME, "p")
+#                     first_suggestion.click()
+#                     print(f"Selected location: {location}")
+#                 except NoSuchElementException:
+#                     print(f"No suggestions found for location '{location}'. Proceeding without location.")
+#                 time.sleep(2)
+
+#         except Exception as e:
+#             print(f"Error entering search parameters: {e}")
+#             return []
+
+#         # Submit the search form
+#         search_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Search')]")
+#         search_button.click()
+#         time.sleep(5)
+
+#         # Start scraping the results
+#         while True:
+#             soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+#             # Extract name, date, and location information
+#             name_tags = soup.find_all('h2', class_='name-grave')
+#             date_tags = soup.find_all('b', class_='birthDeathDates')
+#             location_divs = soup.find_all('div', class_='memorial-item---cemet')
+
+#             names, birth_dates, death_dates, locations = [], [], [], []
+
+#             for tag in name_tags:
+#                 raw_name = tag.get_text(separator=" ", strip=True)
+#                 clean_name = re.sub(r'[“”]', '', raw_name)
+#                 clean_name = re.sub(r'[^\w\s,.]', '', clean_name)
+#                 clean_name = re.sub(r'\s{2,}', ' ', clean_name).strip()
+#                 names.append(clean_name)
+
+#             for tag in date_tags:
+#                 date_text = tag.get_text(strip=True)
+#                 if date_text == "Birth and death dates unknown.":
+#                     birth_dates.append(None)
+#                     death_dates.append(None)
+#                 else:
+#                     birth_date, death_date = [d.strip() for d in date_text.split('–')]
+#                     birth_dates.append(birth_date)
+#                     death_dates.append(death_date)
+
+#             # Extract location information and clean it
+#             for div in location_divs:
+#                 location_tag = div.find('p', class_='addr-cemet', string=lambda x: x and 'Plot info:' not in x)
+#                 if location_tag:
+#                     location_text = " ".join(location_tag.get_text(separator=" ", strip=True).split())
+#                     locations.append(location_text if location_text else "Unknown")
+#                 else:
+#                     locations.append("Unknown")
+
+#             page_data = list(zip(names, birth_dates, death_dates, locations))
+#             all_data.extend(page_data)
+
+#             # Pagination or scrolling
+#             try:
+#                 next_button = driver.find_element(By.LINK_TEXT, "Next")
+#                 driver.execute_script("arguments[0].scrollIntoView(true);", next_button)
+#                 time.sleep(1)
+#                 next_button.click()
+#                 time.sleep(5)
+#             except NoSuchElementException:
+#                 print("No more pages to load. Stopping.")
+#                 break
+
+#     finally:
+#         driver.quit()
+
+#     return all_data
+
+
+# def main():
+#     try:
+#         # Load the data file
+#         file_path = "C:\\Users\\USER\\Desktop\\Scraping\\deceased_file.csv"  # Replace with your file's name
+#         df = pd.read_csv(file_path)
+
+#         # Extract required columns
+#         filtered_df = df[["PartyFirst_Nm", "PartyLast_Nm", "City_Nm"]].dropna().head(5)
+
+#         # Prepare an empty list to store the scraped results
+#         all_scraped_data = []
+
+#         # Iterate through each row of the DataFrame
+#         for _, row in filtered_df.iterrows():
+#             first_name = row["PartyFirst_Nm"]
+#             last_name = row["PartyLast_Nm"]
+#             location = row["City_Nm"]
+
+#             print(f"Scraping data for: {first_name} {last_name} from {location}...")
+#             scraped_data = scrape_data(first_name, last_name, location)
+
+#             if scraped_data:
+#                 all_scraped_data.extend(scraped_data)
+
+#             time.sleep(random.uniform(5, 15))  # Avoid overloading the server
+
+#         # Save all scraped data to a CSV file
+#         scraped_df = pd.DataFrame(all_scraped_data, columns=["Full Name", "Birth Date", "Death Date", "Location"])
+#         scraped_file = "scraped_results.csv"
+#         scraped_df.to_csv(scraped_file, index=False, encoding='utf-8')
+#         print(f"Scraped data saved to '{scraped_file}'.")
+
+#     except FileNotFoundError as e:
+#         print(f"File not found: {e}")
+#     except KeyboardInterrupt:
+#         print("\nOperation interrupted by user.")
+
+
+# if __name__ == "__main__":
+#     main()
+
+
+
+######################################
+######################################
+
+import pandas as pd
+import time
+import re
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, ElementNotInteractableException, NoSuchElementException
+from fake_useragent import UserAgent
+import random
+
+
+def scrape_data(first_name, last_name="", location=""):
+    """
+    Scrapes data from Find A Grave website based on the provided parameters.
+
+    Args:
+        first_name (str): First name of the individual.
+        last_name (str): Last name of the individual (optional).
+        location (str): City of the individual (optional).
+
+    Returns:
+        list: A list of tuples containing names, birth dates, death dates, and location.
+    """
+    url = "https://www.findagrave.com/memorial/search"
+
+    # Web driver setup
+    try:
+        chrome_options = Options()
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+
+        ua = UserAgent()
+        user_agent = ua.random
+        chrome_options.add_argument(f"user-agent={user_agent}")
+
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get(url)
+        time.sleep(random.uniform(2, 5))  # Wait for the page to load
+    except Exception as e:
+        print(f"Error initializing the web driver: {e}")
+        return []
+
+    all_data = []
+
+    try:
+        # Input the search parameters into the form
+        try:
+            # Input first name
+            first_name_input = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.NAME, "firstname"))
+            )
+            first_name_input.clear()
+            first_name_input.send_keys(first_name)
+
+            # Input last name
+            if last_name:
+                last_name_input = driver.find_element(By.NAME, "lastname")
+                last_name_input.clear()
+                last_name_input.send_keys(last_name)
+
+            # Input location into the typeahead input field
+            if location:
+                location_input = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.ID, "location"))
+                )
+
+                location_input.click()
+                time.sleep(1)
+                location_input.clear()
+                location_input.send_keys(location)
+
+                # Wait for the dropdown list to appear and select the first suggestion
+                try:
+                    suggestion_list = WebDriverWait(driver, 10).until(
+                        EC.visibility_of_element_located((By.XPATH, "//div[@role='listbox']"))
+                    )
+                    first_suggestion = suggestion_list.find_element(By.TAG_NAME, "p")
+                    first_suggestion.click()
+                    print(f"Selected location: {location}")
+                except NoSuchElementException:
+                    print(f"No suggestions found for location '{location}'. Proceeding without location.")
+                time.sleep(2)
+
+        except Exception as e:
+            print(f"Error entering search parameters: {e}")
+            return []
+
+        # Submit the search form
+        try:
+            # Wait for the "SEARCH" button to be clickable and click it
+            search_button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[@type='submit' and contains(@class, 'btn-primary') and contains(text(), 'SEARCH')]"))
+            )
+            search_button.click()
+            time.sleep(5)
+            print("Search button clicked successfully.")
+        except TimeoutException:
+            print("Error: Search button not found or not interactable.")
+            return []
+
+        # Start scraping the results
+        while True:
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+            # Extract name, date, and location information
+            name_tags = soup.find_all('h2', class_='name-grave')
+            date_tags = soup.find_all('b', class_='birthDeathDates')
+            location_divs = soup.find_all('div', class_='memorial-item---cemet')
+
+            names, birth_dates, death_dates, locations = [], [], [], []
+
+            for tag in name_tags:
+                raw_name = tag.get_text(separator=" ", strip=True)
+                clean_name = re.sub(r'[“”]', '', raw_name)
+                clean_name = re.sub(r'[^\w\s,.]', '', clean_name)
+                clean_name = re.sub(r'\s{2,}', ' ', clean_name).strip()
+                names.append(clean_name)
+
+            for tag in date_tags:
+                date_text = tag.get_text(strip=True)
+                if date_text == "Birth and death dates unknown.":
+                    birth_dates.append(None)
+                    death_dates.append(None)
+                else:
+                    birth_date, death_date = [d.strip() for d in date_text.split('–')]
+                    birth_dates.append(birth_date)
+                    death_dates.append(death_date)
+
+            # Extract location information and clean it
+            for div in location_divs:
+                location_tag = div.find('p', class_='addr-cemet', string=lambda x: x and 'Plot info:' not in x)
+                if location_tag:
+                    location_text = " ".join(location_tag.get_text(separator=" ", strip=True).split())
+                    locations.append(location_text if location_text else "Unknown")
+                else:
+                    locations.append("Unknown")
+
+            page_data = list(zip(names, birth_dates, death_dates, locations))
+            all_data.extend(page_data)
+
+            # Pagination or scrolling
+            try:
+                next_button = driver.find_element(By.LINK_TEXT, "Next")
+                driver.execute_script("arguments[0].scrollIntoView(true);", next_button)
+                time.sleep(1)
+                next_button.click()
+                time.sleep(5)
+            except NoSuchElementException:
+                print("No more pages to load. Stopping.")
+                break
+
+    finally:
+        driver.quit()
+
+    return all_data
+
+
+def main():
+    try:
+        # Load the data file
+        file_path = "C:\\Users\\USER\\Desktop\\Scraping\\deceased_file.csv"  # Replace with your file's name
+        df = pd.read_csv(file_path)
+
+        # Extract required columns
+        filtered_df = df[["PartyFirst_Nm", "PartyLast_Nm", "City_Nm"]].dropna().head(5)
+
+        # Prepare an empty list to store the scraped results
+        all_scraped_data = []
+
+        # Iterate through each row of the DataFrame
+        for _, row in filtered_df.iterrows():
+            first_name = row["PartyFirst_Nm"]
+            last_name = row["PartyLast_Nm"]
+            location = row["City_Nm"]
+
+            print(f"Scraping data for: {first_name} {last_name} from {location}...")
+            scraped_data = scrape_data(first_name, last_name, location)
+
+            if scraped_data:
+                all_scraped_data.extend(scraped_data)
+
+            time.sleep(random.uniform(5, 15))  # Avoid overloading the server
+            
+            print(f"Total entries extracted: {len(scrape_data)}")
+
+        # Save all scraped data to a CSV file
+        scraped_df = pd.DataFrame(all_scraped_data, columns=["Full Name", "Birth Date", "Death Date", "Location"])
+        scraped_file = "scraped_results.csv"
+        scraped_df.to_csv(scraped_file, index=False, encoding='utf-8')
+        print(f"Scraped data saved to '{scraped_file}'.")
+
+    except FileNotFoundError as e:
+        print(f"File not found: {e}")
+    except KeyboardInterrupt:
+        print("\nOperation interrupted by user.")
+
+
+if __name__ == "__main__":
+    main()

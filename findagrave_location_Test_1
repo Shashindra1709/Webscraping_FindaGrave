@@ -597,5 +597,50 @@ AnalyticHousehold_Id	AnalyticParty_Id	address_id	PartyPrefix_Nm	PartyFirst_Nm	Pa
 2.22224E+14	2.22225E+14	4610188003005050	null	WILLIAM	F	null	HAGAN	HAGAN, WILLIAM F	197 CHURCH ST	PASCOAG	Rhode Island
 
 
+import pandas as pd
+
+# Load the Excel files
+file1 = 'file1.xlsx'  # Replace with your file path
+file2 = 'file2.xlsx'  # Replace with your file path
+
+df1 = pd.read_excel(file1)
+df2 = pd.read_excel(file2)
+
+# Ensure required columns exist in the files
+required_columns_df1 = {'Full_Name'}
+required_columns_df2 = {'Middle_Nm', 'State_Nm'}
+
+if not required_columns_df1.issubset(df1.columns) or not required_columns_df2.issubset(df2.columns):
+    raise ValueError("One or more required columns are missing in the provided Excel files.")
+
+# Prepare to store matched results
+matches = []
+
+# Perform the matching logic
+for _, row1 in df1.iterrows():
+    full_name = row1['Full_Name']  # Full name from file1
+    for _, row2 in df2.iterrows():
+        middle_name = str(row2['Middle_Nm'])  # Middle name from file2
+        state_name = str(row2['State_Nm'])   # State name from file2
+        
+        # Check if the full name contains either the middle name or state name
+        if (middle_name.lower() in full_name.lower()) or (state_name.lower() in full_name.lower()):
+            # Append matched rows from both files
+            match = {
+                'Full_Name': full_name,
+                'Middle_Nm': middle_name,
+                'State_Nm': state_name
+            }
+            matches.append(match)
+
+# Convert matches to a DataFrame and save to a new Excel file
+output_df = pd.DataFrame(matches)
+output_file = 'matched_results.xlsx'  # Specify your output file name
+output_df.to_excel(output_file, index=False)
+
+print(f"Matching results saved to {output_file}")
+
+
+
 """
 

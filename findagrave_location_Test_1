@@ -436,3 +436,61 @@ def main():
 if __name__ == "__main__":
     main()
 
+
+#############################
+
+"""
+
+Full Name,Birth Date,Death Date,Location
+John Francis Brennan Sr. V,24 Jun 1929,23 Apr 2024,"Cumberland, Providence County, Rhode Island"
+Wayne G Lambert,Oct 1951,17 Oct 2021,"West Greenwich, Kent County, Rhode Island"
+John A Jack Daly V,1 Jan 1930,31 Jul 2020,"Hingham, Plymouth County, Massachusetts"
+John Sylvain Daly,30 Sep 1959,1 Feb 2022,"Cotuit, Barnstable County, Massachusetts"
+Rose Sylvia Costa,8 Aug 1926,11 Feb 2022,"Fall River, Bristol County, Massachusetts"
+Rose Lousararian Costa,28 Aug 1934,9 Sep 2024,"Bedford, Middlesex County, Massachusetts"
+Francis Anthony Frank Sendrowski,1946,2 Jun 2020,"Lancaster, Worcester County, Massachusetts"
+Robert E Lambert V,15 Oct 1946,15 Jun 2019,"Warren, Bristol County, Rhode Island"
+William M Bailey,31 Jan 1963,11 Sep 2020,"Exeter, Washington County, Rhode Island"
+Edward Kendall,16 Jul 1963,29 Aug 2021,"North Brookfield, Worcester County, Massachusetts"
+Carl A. Johnson Jr.,26 Mar 1936,25 Sep 2021,"Cranston, Providence County, Rhode Island"
+Carl Robert Johnson,2 Oct 1946,Jun 2021,"Cranston, Providence County, Rhode Island"
+Richard E. Dick Patefield Sr.,1 Apr 1929,9 Nov 2020,"Exeter, Washington County, Rhode Island"
+Crescienzo Chris Malafronte V,10 May 1921,4 Dec 2021,"Bristol, Bristol County, Rhode Island"
+George Dowd Murray V,15 Jan 1945,18 Sep 2022,"Bourne, Barnstable County, Massachusetts"
+George L Bud Murray V,unknown,4 Nov 2021,"Weymouth, Norfolk County, Massachusetts"
+CPL George P. Murray V,1 Mar 1932,31 Mar 2019,"Haverhill, Essex County, Massachusetts"
+George E. Grayson Jr.,7 Jan 1945,1 Mar 2021,"Exeter, Washington County, Rhode Island"
+Sylvia M. Evans,4 Dec 1943,3 Mar 2020,"West Warwick, Kent County, Rhode Island"
+James Francis Parker,18 Nov 1943,3 Jul 2021,"Milton, Norfolk County, Massachusetts"
+James R. Jimmy Parker,31 Dec 1938,17 Oct 2021,"Stoneham, Middlesex County, Massachusetts"
+James S Parker V,24 Mar 1945,27 Mar 2023,"Agawam, Hampden County, Massachusetts"
+Robert Anthony Brown V,6 Jun 1955,8 May 2024,"Exeter, Washington County, Rhode Island"
+Robert H. Bobby Brownie Brown Jr.,5 Feb 1965,11 Jan 2022,"Cranston, Providence County, Rhode Island"
+Robert J Brown,18 Jan 1934,29 Aug 2023,"Exeter, Washington County, Rhode Island"
+Robert J. Brown,unknown,15 Mar 2022,"Pawtucket, Providence County, Rhode Island"
+Robert Leander Brown V,14 Dec 1929,22 Sep 2023,"Exeter, Washington County, Rhode Island"
+Robert R Brown,23 Jul 1935,2 Sep 2024,"Cumberland, Providence County, Rhode Island"
+John L. Jack Habershaw,26 Jan 1933,27 Feb 2021,"East Providence, Providence County, Rhode Island"
+William Bill White Jr. V,5 Mar 1928,17 Jul 2020,"Bourne, Barnstable County, Massachusetts"
+William George White,24 May 1929,25 May 2021,"Tewksbury, Middlesex County, Massachusetts"
+William Herbert White,18 Dec 1938,4 Jan 2021,"Kingston, Plymouth County, Massachusetts"
+William J White,10 Oct 1932,5 May 2020,"Lynn, Essex County, Massachusetts"
+William J. White Jr. V,1949,13 Oct 2023,"Medway, Norfolk County, Massachusetts"
+William L Buddy White,1948,24 Dec 2019,"Raynham, Bristol County, Massachusetts"
+William Robert Chester Bob White Jr.,22 Feb 1939,20 Aug 2024,"Bourne, Barnstable County, Massachusetts"
+William L. Whitehead Jr.,10 Mar 1945,19 Mar 2019,"Agawam, Hampden County, Massachusetts"
+John J. Rocha,6 Jul 1943,21 May 2022,"Exeter, Washington County, Rhode Island"
+Joseph N. Cormier,8 Aug 1927,6 Apr 2022,"Exeter, Washington County, Rhode Island"
+Angèle Harik Haddad,unknown,10 Feb 2023,"Medford, Middlesex County, Massachusetts"
+Alfred J. Haddad V,3 Feb 1923,20 Jan 2021,"Pittsfield, Berkshire County, Massachusetts"
+Alfred John Haddad,10 Apr 1928,5 Aug 2020,"Boston, Suffolk County, Massachusetts"
+Ronald J Baptista,28 Nov 1943,16 Mar 2020,"Taunton, Bristol County, Massachusetts"
+Bertrand Paul Duguay,11 May 1952,20 Apr 2020,"Middletown, Newport County, Rhode Island"
+Edward T. Healey,25 Jul 1947,19 Sep 2021,"Pawtucket, Providence County, Rhode Island"
+Shirley Anne Plumley Wilks V,8 Feb 1928,12 Aug 2021,"Agawam, Hampden County, Massachusetts"
+Robert A. Grenier V,19 Nov 1930,29 Mar 2022,"Coventry, Kent County, Rhode Island"
+William F Hagan,1926,23 Aug 2019,"Burrillville, Providence County, Rhode Island"
+
+
+"""
+

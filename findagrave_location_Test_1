@@ -641,6 +641,18 @@ output_df.to_excel(output_file, index=False)
 print(f"Matching results saved to {output_file}")
 
 
+####################################################################
+
+       # Perform matching
+        matching_records = scraped_df.merge(reference_df, how='inner', on=["Full Name", "Birth Date"])
+        non_matching_records = scraped_df[~scraped_df.index.isin(matching_records.index)]
+
+        # Output results
+        print("\nMatching Records:")
+        print(matching_records)
+
+        print("\nNon-Matching Records:")
+        print(non_matching_records)
 
 """
 

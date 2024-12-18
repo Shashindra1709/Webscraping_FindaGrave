@@ -136,11 +136,12 @@ from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
 import json
 from datetime import datetime
+import pandas as pd
 
 sys.stdout.reconfigure(encoding='utf-8')
 
 
-def scrape_obituaries(first_name, last_name, published_year):
+def scrape_obituaries(first_name, last_name, published_year="2017"):
     try:
         # Input validate
         if not published_year.isdigit() or len(published_year) != 4:
@@ -237,15 +238,16 @@ def scrape_obituaries(first_name, last_name, published_year):
 
 def process_file(file_path):
     try:
-        with open(file_path, 'r') as file:
-            reader = csv.DictReader(file, delimiter='\t')
-            for row in reader:
-                first_name = row.get('PartyFirst_Nm', '').strip()
-                last_name = row.get('PartyLast_Nm', '').strip()
+        data = pd.read_csv(file_path)
+        data = data.head(100)
 
-                if first_name or last_name:
-                    print(f"Searching for: First Name = {first_name}, Last Name = {last_name}")
-                    scrape_obituaries(first_name, last_name, '2023')  # Change the year if needed
+        for index, row in data.iterrows():
+                    first_name = row['PartyFirst_Nm']
+                    last_name = row['PartyLast_Nm']
+                    if pd.notna(first_name) and pd.notna(last_name):
+                        scrape_obituaries(first_name, last_name, published_year="2017")  
+    
+                    
     except FileNotFoundError:
         print(f"Error: File {file_path} not found.")
     except Exception as e:
@@ -254,7 +256,7 @@ def process_file(file_path):
 
 def main():
     try:
-        file_path = input("Enter the path to the file: ")
+        file_path = "C:\\Users\\bogas\\OneDrive - Nationwide\\Desktop\\UW_Deceased_Scrape\\deceased_file.csv"
         process_file(file_path)
     except KeyboardInterrupt:
         print("\nOperation interrupted by user.")
@@ -262,6 +264,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 """

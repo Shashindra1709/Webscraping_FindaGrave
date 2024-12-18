@@ -123,13 +123,13 @@ def main():
 if __name__ == "__main__":
     main()
 
-###################################################################
+################################################################### Maching data finding
 
 """
 import csv
 import time
 import sys
-import re  
+import re
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -166,90 +166,88 @@ def scrape_obituaries(first_name, last_name, published_year="2017"):
 
         time.sleep(10)
 
-        while True:
-            soup = BeautifulSoup(driver.page_source, 'html.parser')
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-            # Attempt to parse JSON data from the page
-            try:
-                json_data = json.loads(soup.text)
-            except json.JSONDecodeError as e:
-                print(f"Error decoding JSON: {e}")
-                driver.quit()
-                return
-
-            # Save the data to a JSON file
-            try:
-                with open('obituaries_data.json', 'w') as file:
-                    json.dump(json_data, file)
-            except IOError as e:
-                print(f"Error saving data to file: {e}")
-                driver.quit()
-                return
-
-            driver.quit()
-            break
-
-        # Read the data from the saved file
         try:
-            with open('obituaries_data.json', 'r') as file:
-                data = json.load(file)
-        except (IOError, json.JSONDecodeError) as e:
-            print(f"Error reading the saved JSON file: {e}")
-            return
+            json_data = json.loads(soup.text)
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON: {e}")
+            driver.quit()
+            return []
+
+        driver.quit()
 
         # Process the obituary data
-        try:
-            obituaries = data.get('obituaries', [])
-            filtered_data = []
+        filtered_data = []
 
-            def clean_name(name):
-                return re.sub(r'\"(.*?)\"', r'\1', name)
+        def clean_name(name):
+            return re.sub(r'\"(.*?)\"', r'\1', name)
 
-            for obituary in obituaries:
-                full_name = obituary['name']['fullName']
-                full_name = clean_name(full_name)
-                age = obituary.get('age')
-                From_To_Years = obituary.get('fromToYears')
+        for obituary in json_data.get('obituaries', []):
+            full_name = obituary['name']['fullName']
+            full_name = clean_name(full_name)
+            age = obituary.get('age')
+            From_To_Years = obituary.get('fromToYears')
 
-                # Extracting location
-                location = obituary.get('location', {})
-                city = location.get('city', {}).get('fullName', 'Unknown')
-                state = location.get('state', {}).get('fullName', 'Unknown')
-                full_location = f"{city}, {state}" if city and state else "Unknown"
+            # Extracting location
+            location = obituary.get('location', {})
+            city = location.get('city', {}).get('fullName', 'Unknown')
+            state = location.get('state', {}).get('fullName', 'Unknown')
+            full_location = f"{city}, {state}" if city and state else "Unknown"
 
-                filtered_data.append({
-                    'full_name': full_name,
-                    'age': age,
-                    'From_To_Years': From_To_Years,
-                    'location': full_location
-                })
+            filtered_data.append({
+                'full_name': full_name,
+                'age': age,
+                'From_To_Years': From_To_Years,
+                'location': full_location
+            })
 
-            for entry in filtered_data:
-                print(f"Full_Name: {entry['full_name']}, Dates: {entry['From_To_Years']}, Age: {entry['age']}, Location: {entry['location']}")
-
-            print(f"Total matching records: {len(filtered_data)}")
-
-        except KeyError as e:
-            print(f"Missing expected data in the JSON response: {e}")
+        return filtered_data
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+        return []
 
 
-def process_file(file_path):
+def process_file(file_path, reference_file):
     try:
         data = pd.read_csv(file_path)
         data = data.head(100)
+        all_scraped_data = []
 
+        # Scrape data for each row
         for index, row in data.iterrows():
-                    first_name = row['PartyFirst_Nm']
-                    last_name = row['PartyLast_Nm']
-                    if pd.notna(first_name) and pd.notna(last_name):
-                        scrape_obituaries(first_name, last_name, published_year="2017")  
-    
-                    
-    except FileNotFoundError:
-        print(f"Error: File {file_path} not found.")
+            first_name = row['PartyFirst_Nm']
+            last_name = row['PartyLast_Nm']
+            if pd.notna(first_name) and pd.notna(last_name):
+                scraped_data = scrape_obituaries(first_name, last_name, published_year="2017")
+                all_scraped_data.extend(scraped_data)
+
+        # Convert scraped data to DataFrame and save to CSV
+        scraped_df = pd.DataFrame(all_scraped_data)
+        scraped_file = 'scraped_data.csv'
+        scraped_df.to_csv(scraped_file, index=False)
+        print(f"Scraped data saved to '{scraped_file}'.")
+
+        # Load reference data
+        reference_df = pd.read_csv(reference_file)
+
+        # Perform matching and save results
+        matched_records = pd.merge(
+            scraped_df, reference_df,
+            left_on='full_name', right_on='PartyFull_Nm',
+            how='inner'
+        )
+        non_matched_records = pd.concat([scraped_df, matched_records]).drop_duplicates(subset=['full_name'], keep=False)
+
+        matched_records.to_csv('matched_records.csv', index=False)
+        non_matched_records.to_csv('non_matched_records.csv', index=False)
+
+        print(f"Matched records saved to 'matched_records.csv'. Total matches: {len(matched_records)}")
+        print(f"Non-matched records saved to 'non_matched_records.csv'. Total non-matches: {len(non_matched_records)}")
+
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
     except Exception as e:
         print(f"An error occurred while processing the file: {e}")
 
@@ -257,15 +255,14 @@ def process_file(file_path):
 def main():
     try:
         file_path = "C:\\Users\\bogas\\OneDrive - Nationwide\\Desktop\\UW_Deceased_Scrape\\deceased_file.csv"
-        process_file(file_path)
+        reference_file = "C:\\Users\\bogas\\OneDrive - Nationwide\\Desktop\\UW_Deceased_Scrape\\reference_file.csv"
+        process_file(file_path, reference_file)
     except KeyboardInterrupt:
         print("\nOperation interrupted by user.")
 
 
 if __name__ == "__main__":
     main()
-
-
 
 """
 
